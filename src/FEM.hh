@@ -38,9 +38,8 @@ public:
     enum { doPatternVolume = true };
     enum { doAlphaVolume = true };
 
-    FEM (U_BCType& ubctype_,BCType& bctype_,RF a_, RF b_, RF D1_,
-         RF D2_, RF K) : ubctype(ubctype_),bctype(bctype_), a(a_), b(b_), D1(D1_),
-                         D2(D2_), K(K_) {}
+    LocalOperator (U_BCType& ubctype_,BCType& bctype_,RF a_, RF b_, RF D1_, RF D2_, RF K_) :
+        ubctype(ubctype_),bctype(bctype_), a(a_), b(b_), D1(D1_), D2(D2_), K(K_) {}
 
     template<typename EG, typename LFSU, typename X,
              typename LFSV, typename R>
@@ -81,7 +80,7 @@ public:
                 jac.mv(gradphihat[i][0],gradphi[i][0]);
 
             // gradient of u0
-            Dune::FieldVector<RF,dim> gradu0(0.0), gradu1(0,0), f;
+            Dune::FieldVector<RF,dim> gradu0(0.0), gradu1(0.0), f;
             for (std::size_t i=0; i<lfsu0.size(); i++)
                 gradu0.axpy(x(lfsu0,i),gradphi[i][0]);
 
@@ -95,13 +94,11 @@ public:
             RF f2     = K * (b - u0 * u0 * u1);
             
             for (std::size_t i=0; i<lfsu0.size(); i++) {
-                r.accumulate(lfsu0,i, (D1*gradu0*gradphi[i][0] - f1 * phihat[i])*factor);
-                //r.accumulate(lfsu0,i,c*c*(gradu0*gradphi[i][0])*factor-f*phihat[i]*factor);
-                //r.accumulate(lfsu1,i,-u1*phihat[i]*factor);
+                r.accumulate(lfsu0,i, (D1*(gradu0*gradphi[i][0]) - f1 * phihat[i])*factor);
             }
 
             for (std::size_t i=0; i<lfsu1.size(); i++) {
-                r.accumulate(lfsu1,i, (D2*gradu1*gradphi[i][0] - f2 * phihat[i])*factor);
+                r.accumulate(lfsu1,i, (D2*(gradu1*gradphi[i][0]) - f2 * phihat[i])*factor);
             }
         }
     }
@@ -126,13 +123,6 @@ private:
 };
 
 
-/** a local operator for the temporal operator in the wave equation assuming identical components
- *
- * \f{align*}{
- \int_\Omega uv dx
- * \f}
- * \tparam FEM      Type of a finite element map
- */
 template<typename FEM>
 class TimeLocalOperator:
     public Dune::PDELab::NumericalJacobianApplyVolume<TimeLocalOperator<FEM>>,
