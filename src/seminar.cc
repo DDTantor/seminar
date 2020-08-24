@@ -36,16 +36,20 @@ int main(int argc, char** argv)
     std::string name  = input_data.get<std::string>("output.filename");
 
 
+    std::string filename = "circle.msh";
     using GridType =  Dune::ALUGrid<2,2,Dune::simplex,Dune::conforming>;
     using GridView =  GridType::LeafGridView;
 
-    std::string filename = "circle.msh";
-    
     GridType* pgrid = Dune::GmshReader<GridType>::read(filename);
 
+    pgrid->loadBalance();
     if(refinement > 0)
         pgrid->globalRefine(refinement);
 
+    Dune::gridinfo(*pgrid);
+    Dune::VTKWriter<GridView> writer(pgrid->leafGridView());
+    writer.write("domena");
+    
     auto gv = pgrid->leafGridView();
     driver(gv, dt, a, b, K, D1, D2, T_end, name);
 
