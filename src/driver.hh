@@ -60,8 +60,8 @@ void driver (const GV& gv, double dt, double a, double b, double K,
     using BCE1 = BCExtension1<GV, double>;
     using BCE = Dune::PDELab::CompositeGridFunction<BCE0, BCE1>;
 
-    BCE0 bce0(gv);
-    BCE1 bce1(gv);
+    BCE0 bce0(gv, a, b);
+    BCE1 bce1(gv, a, b);
     BCE bce(bce0, bce1);
     bce.setTime(time);
     Dune::PDELab::interpolate(bce,gfs,z);
