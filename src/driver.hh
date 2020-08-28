@@ -17,6 +17,8 @@
 #include <dune/grid/io/file/vtk/subsamplingvtkwriter.hh>
 #include <dune/grid/io/file/vtk/vtksequencewriter.hh>
 
+#include<dune/pdelab/newton/newton.hh>
+
 #include <dune/pdelab/gridoperator/onestep.hh>
 #include <string>
 #include <stdexcept>
@@ -100,16 +102,20 @@ void driver (const GV& gv, double dt, double a, double b, double K,
     Dune::VTKSequenceWriter<GV> writer(std::make_shared<VTKW>(vtkwriter), name);
     writer.write(time);
 
-    // Linear problem solver
+    // Non-Linear problem solver
     using LS = Dune::PDELab::ISTLBackend_SEQ_BCGS_SSOR;
     LS ls(5000,false);
-    using SLP = Dune::PDELab::StationaryLinearProblemSolver<IGO,LS,Z>;
-    SLP slp(igo,ls,1e-8);
-
+    
+    typedef Dune::PDELab::Newton<IGO,LS,Z> PDESOLVER;
+    
+    PDESOLVER pdesolver(igo, z, ls);
+    
     Dune::PDELab::OneStepThetaParameter<RF> method1(1.0);
     Dune::PDELab::Alexander2Parameter<RF> method2;
 
-    Dune::PDELab::OneStepMethod<RF,IGO,SLP,Z,Z> osm(method2,igo,slp);
+    //Dune::PDELab::OneStepMethod<RF,IGO,SLP,Z,Z> osm(method2,igo,slp);
+
+    Dune::PDELab::OneStepMethod<RF,IGO,PDESOLVER,Z,Z> osm(method2,igo,pdesolver);
     osm.setVerbosityLevel(2);
 
 //vremenska petlja
