@@ -174,8 +174,8 @@ public:
 
             RF factor=ip.weight()*geo.integrationElement(ip.position());
             for (std::size_t i=0; i<lfsu0.size(); i++) {
-                r.accumulate(lfsu0,i,u1*phihat[i]*factor);
-                r.accumulate(lfsu1,i,u0*phihat[i]*factor);
+                r.accumulate(lfsu0,i,u0*phihat[i]*factor);
+                r.accumulate(lfsu1,i,u1*phihat[i]*factor);
             }
         }
     }
